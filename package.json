@@ -1,5 +1,5 @@
 {
-  "name": "wordpack",
+  "name": "@x-wp/wordpack",
   "description": "Front-end bundler toolkit for WordPress themes & plugins",
   "version": "0.0.0-development",
   "license": "MIT",
