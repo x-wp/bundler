@@ -9,7 +9,7 @@ import { WordPackConfig, WordPackEnv } from '../config';
 import { WordPackConfigInterface, WordPackEnvInterface } from '../interfaces';
 import { OnlyFriendlyErrorsPlugin } from '../plugins';
 
-import { Configuration } from 'webpack';
+import { Configuration, WebpackError } from 'webpack';
 import { merge } from 'webpack-merge';
 import { Bundler } from './bundler.service';
 
@@ -24,10 +24,10 @@ export class WordPack {
     });
   }
 
-  private async getUserConfig(): Promise<WordPackConfig> {
+  private async getUserConfig(configFile?: string): Promise<WordPackConfig> {
     const config = await transformAndValidate(
       WordPackConfig,
-      await this.loadConfigFile(),
+      await this.loadConfigFile(configFile),
     );
 
     if (this.env.production) {
@@ -37,37 +37,56 @@ export class WordPack {
     return config;
   }
 
-  async loadConfigFile(): Promise<WordPackConfigInterface> {
-    const file = 'wpwp.config.ts';
-    const paths = ['', 'assets', 'assets/build'];
+  async loadConfigFile(configFile?: string): Promise<WordPackConfigInterface> {
+    try {
+      const name = 'wpwp.config.ts';
+      const paths = [
+        'assets/wordpack',
+        'assets/webpack',
+        '',
+        'assets',
+        'assets/build',
+      ];
 
-    const path = paths.find((p) => fs.existsSync(this.resolve(p, file)));
+      const found = configFile
+        ? path.resolve(this.env.basePath, configFile)
+        : paths.map((p) => this.resolve(p, name)).find((p) => fs.existsSync(p));
 
-    if (!path) {
-      throw new Error('Config file not found');
+      if (!found) {
+        throw new ReferenceError('Config file not found');
+      }
+
+      return (await import(found)).default;
+    } catch (e) {
+      throw new WebpackError(
+        'Error loading config file: ' + e.message.split('\n')[0] + '...',
+      );
     }
-
-    return (await import(this.resolve(path, file))).default;
   }
 
-  async buildConfig(): Promise<Configuration[]> {
-    const userConfig = await this.getUserConfig();
-    const bundler = new Bundler(this.env, userConfig);
+  async buildConfig(configFile?: string): Promise<Configuration[]> {
+    try {
+      const userConfig = await this.getUserConfig(configFile);
+      const bundler = new Bundler(this.env, userConfig);
 
-    const sharedConfig = this.buildSharedConfig(userConfig);
+      const sharedConfig = this.buildSharedConfig(userConfig);
 
-    const bundleConfig = userConfig.multimode
-      ? userConfig.bundles.map((bundle) =>
-          merge(sharedConfig, bundler.multiModeConfig(bundle)),
-        )
-      : [merge(sharedConfig, bundler.singleModeConfig(userConfig.bundles))];
+      const bundleConfig = userConfig.multimode
+        ? userConfig.bundles.map((bundle) =>
+            merge(sharedConfig, bundler.multiModeConfig(bundle)),
+          )
+        : [merge(sharedConfig, bundler.singleModeConfig(userConfig.bundles))];
 
-    this.cleanDist(userConfig.distRoot);
+      this.cleanDist(userConfig.distRoot);
 
-    return [
-      ...bundleConfig,
-      bundler.createAssetConfig(bundleConfig.map((b) => b.name as string)),
-    ];
+      return [
+        ...bundleConfig,
+        bundler.createAssetConfig(bundleConfig.map((b) => b.name as string)),
+      ];
+    } catch (e) {
+      console.error('WordPack error\n' + e.message);
+      process.exit(1);
+    }
   }
 
   private cleanDist(distRoot: string): void {
