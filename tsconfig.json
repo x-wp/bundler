@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    // "module": "Node16",
+    "module": "CommonJS",
+    // "moduleResolution": "Node16",
+    "esModuleInterop": true,
+    "declaration": true,
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "removeComments": false,
+    "strict": true,
+    "noLib": false,
+    "exactOptionalPropertyTypes": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "useUnknownInCatchVariables": false,
+    "skipLibCheck": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "allowJs": true,
+    "outDir": "./dist",
+    "rootDir": "./lib",
+    "typeRoots": [
+      "./node_modules/@types",
+      "./lib/@types",
+    ],
+  },
+  "include": [
+    "lib/**/*"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+    "test",
+  ]
+}

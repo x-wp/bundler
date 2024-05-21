@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "awesome-notifications": "^3"
+  },
+  "devDependencies": {
+    "@types/awesome-notifications": "^3.1.6"
+  }
+}
