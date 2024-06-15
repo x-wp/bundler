@@ -1,3 +1,9 @@
 import AWN from 'awesome-notifications';
 
-new AWN();
+document.addEventListener('DOMContentLoaded', () => {
+
+const awn = new AWN();
+
+awn.modal('bbbb');
+});
+

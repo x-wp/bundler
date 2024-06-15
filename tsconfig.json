@@ -10,6 +10,7 @@
     "removeComments": false,
     "strict": true,
     "noLib": false,
+    "strictPropertyInitialization": false,
     "exactOptionalPropertyTypes": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

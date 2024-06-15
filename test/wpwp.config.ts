@@ -15,7 +15,7 @@ const config: WordPackConfig = {
     {
       name: 'css-only',
       files: ['./styles/css-only.scss'],
-      splitChunks: true,
+      // splitChunks: true,
     },
     {
       name: 'js-only',

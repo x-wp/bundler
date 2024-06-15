@@ -1,10 +1,9 @@
-import { Expose, Transform, Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsHexColor,
   IsInstance,
   IsInt,
-  IsNotEmpty,
   IsObject,
   IsOptional,
   IsPositive,
@@ -15,7 +14,6 @@ import {
 import type { Configuration } from 'webpack';
 
 export class BundleConfig {
-  @IsNotEmpty()
   @IsString()
   name!: string;
 
@@ -23,6 +21,7 @@ export class BundleConfig {
   files!: string[];
 
   @IsBoolean()
+  @IsOptional()
   splitChunks: boolean = false;
 
   @IsOptional()
@@ -31,25 +30,35 @@ export class BundleConfig {
   @ValidateIf((o: BundleConfig) => o.splitChunks === true)
   chunkTest: RegExp = /[\\/]node_modules[\\/]/;
 
+  @IsString()
   @ValidateIf((o: BundleConfig) => o.splitChunks === true)
-  @Transform(
-    ({ value, obj }) => (value || 'vendor-[name]').replace('[name]', obj.name),
-    { toClassOnly: true },
-  )
-  @Expose()
-  chunkName?: string;
+  @IsOptional()
+  chunkId: string = 'vendor-[name]';
 
   @Min(20000)
   @IsPositive()
   @IsInt()
-  @ValidateIf((o: BundleConfig) => o.splitChunks === true)
   @IsOptional()
-  chunkMinSize?: number;
+  @ValidateIf((o: BundleConfig) => o.splitChunks === true)
+  chunkMinSize: number = 20000;
 
   @IsHexColor()
   @IsOptional()
   color?: string;
 
   @IsObject()
+  @IsOptional()
   override: Partial<Configuration> = {};
+
+  hasStyles(): boolean {
+    return this.files.some((f) => f.match(/\.s?css$/i));
+  }
+
+  hasScripts(): boolean {
+    return this.files.some((f) => f.match(/(\.[tj]sx?)$/i));
+  }
+
+  get chunkName(): string {
+    return this.chunkId.replace('[name]', this.name);
+  }
 }

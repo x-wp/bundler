@@ -22,4 +22,16 @@ export class WordPackEnv {
   @IsBoolean()
   @IsOptional()
   WEBPACK_WATCH?: boolean;
+
+  get base(): string {
+    return this.basePath;
+  }
+
+  get prod(): boolean {
+    return this.production;
+  }
+
+  resolve(...paths: string[]): string {
+    return path.posix.resolve(this.base, ...paths);
+  }
 }

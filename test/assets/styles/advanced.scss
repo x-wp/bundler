@@ -1,6 +1,9 @@
-@import "~awesome-notifications/dist/style.css";
-@import "autoload/fonts";
+@import "awesome-notifications/dist/style.css";
+@import "@uppy/core/dist/style.min.css";
+@import "@uppy/dashboard/dist/style.min.css";
+
+@import "./autoload/fonts";
 
 body {
-  display:none;
+  font-family: "Titillium Web", sans-serif;
 }

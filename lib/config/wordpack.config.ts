@@ -1,5 +1,5 @@
-import { BundleConfig } from './bundle.config';
-import { Expose, Type } from 'class-transformer';
+import { Configuration } from 'webpack';
+import { Expose, Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -7,17 +7,30 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  ValidateIf,
   ValidateNested,
 } from 'class-validator';
-import { Configuration } from 'webpack';
+import { WordPackEnv } from './wordpack-env';
+import { BundleConfig } from './bundle.config';
 
-export class WordPackConfig {
+export class WordPackConfig extends WordPackEnv {
+  @IsString()
+  @Transform(({ value }) =>
+    (value || '[name].[contenthash:6][ext]').replace('[ext]', ''),
+  )
+  @IsOptional()
+  @Expose()
+  filename: string;
+
+  @IsString()
+  @IsOptional()
+  manifest: string = 'assets.json';
+
   @ValidateNested({ each: true })
   @Type(() => BundleConfig)
   bundles!: BundleConfig[];
 
   @IsObject()
+  @IsOptional()
   @IsOptional()
   externals: Record<string, string> = {
     jquery: 'jQuery',
@@ -27,30 +40,37 @@ export class WordPackConfig {
 
   @IsBoolean()
   @IsOptional()
+  @IsOptional()
   multimode: boolean = true;
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   srcBase?: string = 'assets';
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   distBase?: string = 'dist';
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   imageDir?: string = 'images';
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   fontDir?: string = 'fonts';
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   jsDir?: string = 'scripts';
 
   @IsString()
   @IsNotEmpty()
+  @IsOptional()
   cssDir?: string = 'styles';
 
   @IsEnum([
@@ -70,9 +90,10 @@ export class WordPackConfig {
   globalChunks: string[] = ['awesome-notifications'];
 
   @IsObject()
+  @IsOptional()
   override: Partial<Configuration> = {};
 
-  get assetRoot(): string {
+  get srcDir(): string {
     return this.srcBase as string;
   }
 
@@ -94,5 +115,21 @@ export class WordPackConfig {
 
   get styles(): string {
     return this.cssDir as string;
+  }
+
+  get mode(): 'production' | 'development' {
+    return this.prod ? 'production' : 'development';
+  }
+
+  get asset(): string {
+    return this.prod ? this.filename : '[name]';
+  }
+
+  get isCI(): boolean {
+    return process.env.CI !== undefined;
+  }
+
+  get distPath(): string {
+    return this.resolve(this.distRoot);
   }
 }
