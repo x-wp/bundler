@@ -16,15 +16,12 @@ export class SharedConfig {
   private static getCoreConfig(cfg: WordPackConfig): Configuration {
     return {
       devtool: cfg.sourceMaps,
-      context: cfg.resolve(cfg.srcDir),
+      context: cfg.path('src', 'root'),
+      externalsType: 'window',
       externals: cfg.externals,
       mode: 'development',
-      target: 'browserslist',
-      output: {
-        path: cfg.resolve(cfg.distRoot),
-        publicPath: '',
-        filename: `${cfg.scripts}/[name].js`,
-      },
+      target: 'web',
+
       stats: false,
       optimization: {
         removeEmptyChunks: true,

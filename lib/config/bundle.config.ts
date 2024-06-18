@@ -12,6 +12,7 @@ import {
   ValidateIf,
 } from 'class-validator';
 import type { Configuration } from 'webpack';
+import * as path from 'node:path';
 
 export class BundleConfig {
   @IsString()
@@ -21,8 +22,7 @@ export class BundleConfig {
   files!: string[];
 
   @IsBoolean()
-  @IsOptional()
-  splitChunks: boolean = false;
+  splitChunks: boolean = true;
 
   @IsOptional()
   @IsInstance(RegExp)
@@ -35,12 +35,11 @@ export class BundleConfig {
   @IsOptional()
   chunkId: string = 'vendor-[name]';
 
-  @Min(20000)
+  @Min(10)
   @IsPositive()
   @IsInt()
-  @IsOptional()
   @ValidateIf((o: BundleConfig) => o.splitChunks === true)
-  chunkMinSize: number = 20000;
+  chunkMinSize: number = 5000;
 
   @IsHexColor()
   @IsOptional()
@@ -60,5 +59,18 @@ export class BundleConfig {
 
   get chunkName(): string {
     return this.chunkId.replace('[name]', this.name);
+  }
+
+  get entry(): Record<string, string[]> {
+    return this.files.reduce(
+      (obj, file) => {
+        const base = path.basename(file, path.extname(file));
+        obj[base] ??= [];
+        obj[base].push(file);
+
+        return obj;
+      },
+      {} as Record<string, string[]>,
+    );
   }
 }

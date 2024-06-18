@@ -1,0 +1,13 @@
+@import '@fortawesome/fontawesome-free/css/fontawesome.css';
+@import '@fortawesome/fontawesome-free/css/regular.css';
+@import "@uppy/core/dist/style.min.css";
+@import "@uppy/dashboard/dist/style.min.css";
+
+
+body {
+  display:none;
+}
+
+div {
+  background: url('../../images/spinner.gif');
+}

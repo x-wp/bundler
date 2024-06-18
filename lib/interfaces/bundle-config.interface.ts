@@ -10,4 +10,5 @@ export interface BundleConfigInterface {
   globalChunks?: string[];
   override?: Partial<Configuration>;
   color?: string;
+  entry?: Record<string, string[]>;
 }

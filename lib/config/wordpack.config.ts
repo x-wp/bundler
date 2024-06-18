@@ -1,5 +1,11 @@
-import { Configuration } from 'webpack';
-import { Expose, Transform, Type } from 'class-transformer';
+import {
+  Configuration,
+  ExternalItemFunctionData,
+  ExternalItemObjectKnown,
+  ExternalItemObjectUnknown,
+  ExternalItemValue,
+} from 'webpack';
+import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -11,67 +17,72 @@ import {
 } from 'class-validator';
 import { WordPackEnv } from './wordpack-env';
 import { BundleConfig } from './bundle.config';
+import { DirMap, PathConfig } from './dir.config';
+
+type ExternalItem =
+  | string
+  | RegExp
+  | (ExternalItemObjectKnown & ExternalItemObjectUnknown)
+  | ((
+      data: ExternalItemFunctionData,
+      callback: (
+        err?: null | Error,
+        result?: string | boolean | string[] | { [index: string]: any },
+      ) => void,
+    ) => void)
+  | ((data: ExternalItemFunctionData) => Promise<ExternalItemValue>);
+
+type DirType = keyof DirMap;
 
 export class WordPackConfig extends WordPackEnv {
   @IsString()
-  @Transform(({ value }) =>
-    (value || '[name].[contenthash:6][ext]').replace('[ext]', ''),
-  )
-  @IsOptional()
-  @Expose()
-  filename: string;
+  @Transform(({ value }) => value.replace('[ext]', ''))
+  filename: string = '[name].[contenthash:6]';
 
   @IsString()
-  @IsOptional()
   manifest: string = 'assets.json';
 
   @ValidateNested({ each: true })
   @Type(() => BundleConfig)
   bundles!: BundleConfig[];
 
-  @IsObject()
-  @IsOptional()
-  @IsOptional()
-  externals: Record<string, string> = {
-    jquery: 'jQuery',
-    underscore: '_',
-    backbone: 'backbone',
-  };
+  @IsNotEmpty()
+  externals:
+    | string
+    | RegExp
+    | ExternalItem[]
+    | (ExternalItemObjectKnown & ExternalItemObjectUnknown)
+    | ((
+        data: ExternalItemFunctionData,
+        callback: (
+          err?: null | Error,
+          result?: string | boolean | string[] | { [index: string]: any },
+        ) => void,
+      ) => void)
+    | ((data: ExternalItemFunctionData) => Promise<ExternalItemValue>) = [
+    {
+      jquery: 'jQuery',
+      underscore: '_',
+      backbone: 'backbone',
+      lodash: '_',
+    },
+    // function ({ context, request }, callback) {
+    //   if (/^lodash/.test(request as string)) {
+    //     callback(null, 'window _');
+    //     return;
+    //   }
+    //   callback();
+    // },
+  ];
 
   @IsBoolean()
   @IsOptional()
-  @IsOptional()
   multimode: boolean = true;
 
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  srcBase?: string = 'assets';
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  distBase?: string = 'dist';
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  imageDir?: string = 'images';
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  fontDir?: string = 'fonts';
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  jsDir?: string = 'scripts';
-
-  @IsString()
-  @IsNotEmpty()
-  @IsOptional()
-  cssDir?: string = 'styles';
+  @IsObject()
+  @ValidateNested()
+  @Type(() => PathConfig)
+  paths: PathConfig = new PathConfig();
 
   @IsEnum([
     'eval',
@@ -86,35 +97,43 @@ export class WordPackConfig extends WordPackEnv {
   sourceMaps: string | false = 'eval-cheap-source-map';
 
   @IsString({ each: true })
-  @IsOptional()
   globalChunks: string[] = ['awesome-notifications'];
 
   @IsObject()
-  @IsOptional()
   override: Partial<Configuration> = {};
 
-  get srcDir(): string {
-    return this.srcBase as string;
+  root(which: DirType): string {
+    return this.dir(which, 'root');
   }
 
-  get distRoot(): string {
-    return this.distBase as string;
+  images(which: DirType): string {
+    return this.dir(which, 'images');
   }
 
-  get images(): string {
-    return this.imageDir as string;
+  scripts(which: DirType): string {
+    return this.dir(which, 'scripts');
   }
 
-  get fonts(): string {
-    return this.fontDir as string;
+  styles(which: DirType): string {
+    return this.dir(which, 'styles');
   }
 
-  get scripts(): string {
-    return this.jsDir as string;
+  fonts(which: DirType): string {
+    return this.dir(which, 'fonts');
   }
 
-  get styles(): string {
-    return this.cssDir as string;
+  path(which: DirType, dir: keyof PathConfig): string {
+    return dir === 'root'
+      ? this.resolve(this.dir(which, 'root'))
+      : this.resolve(this.dir(which, 'root'), this.dir(which, dir));
+  }
+
+  dir(which: DirType, dir: keyof PathConfig): string {
+    if (typeof this.paths[dir] === 'string') {
+      return this.paths[dir] as string;
+    }
+
+    return this.paths[dir][which];
   }
 
   get mode(): 'production' | 'development' {
@@ -127,9 +146,5 @@ export class WordPackConfig extends WordPackEnv {
 
   get isCI(): boolean {
     return process.env.CI !== undefined;
-  }
-
-  get distPath(): string {
-    return this.resolve(this.distRoot);
   }
 }

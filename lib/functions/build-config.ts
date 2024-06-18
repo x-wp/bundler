@@ -27,9 +27,12 @@ export async function buildConfig(
       ),
     );
 
+    // console.log(res);
+    // process.exit(0);
+
     res.push(Svc.AssetConfig.build(cfg));
 
-    fs.emptyDirSync(cfg.distPath);
+    fs.emptyDirSync(cfg.path('dist', 'root'));
 
     return res;
   } catch (e) {

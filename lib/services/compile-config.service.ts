@@ -1,4 +1,4 @@
-import { Configuration } from 'webpack';
+import { AssetInfo, Configuration, PathData } from 'webpack';
 import merge from 'webpack-merge';
 import { BundleConfig, WordPackConfig } from '../config';
 import WebpackRemoveEmptyScriptsPlugin from 'webpack-remove-empty-scripts';
@@ -6,9 +6,6 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CssUrlRelativePlugin from 'css-url-relative-plugin';
 
 export class CompileConfig {
-  private static scriptConfig: Partial<Configuration>;
-  private static styleConfig: Partial<Configuration>;
-
   static build(
     cfg: WordPackConfig,
     bundle: BundleConfig,
@@ -28,15 +25,12 @@ export class CompileConfig {
       return {};
     }
 
-    return (this.scriptConfig ??= {
-      output: {
-        filename: `${cfg.scripts}/${cfg.asset}.js`,
-      },
+    return {
       module: {
         rules: [
           {
             test: /(\.[tj]sx?)$/,
-            include: [cfg.resolve(cfg.srcDir, cfg.scripts)],
+            include: [cfg.path('src', 'scripts')],
             exclude: [/node_modules(?![/|\\](bootstrap|foundation-sites))/],
             use: {
               loader: 'babel-loader',
@@ -65,7 +59,7 @@ export class CompileConfig {
       resolve: {
         extensions: ['jsx', '.tsx', '.ts', '.js'],
       },
-    });
+    };
   }
 
   private static getCssConfig(
@@ -76,12 +70,15 @@ export class CompileConfig {
       return {};
     }
 
-    return (this.styleConfig ??= {
+    return {
+      // output: {
+      // cssFilename: `${cfg.styles('dist')}/${bundle.name}/${cfg.asset}.css`,
+      // },
       module: {
         rules: [
           {
-            test: /\.s?css$/i,
-            include: cfg.resolve(cfg.srcDir, cfg.styles),
+            test: /\.(sa|sc|c)ss$/i,
+            include: cfg.path('src', 'styles'),
             use: [
               {
                 loader: MiniCssExtractPlugin.loader,
@@ -89,7 +86,7 @@ export class CompileConfig {
               {
                 loader: 'css-loader',
                 options: {
-                  importLoaders: 3,
+                  importLoaders: 1,
                   sourceMap: true,
                 },
               },
@@ -116,36 +113,34 @@ export class CompileConfig {
                 },
               },
             ],
-            generator: {
-              filename: `${cfg.styles}/${cfg.asset}.css`,
-            },
           },
           {
             test: /\.(png|svg|jpg|jpeg|gif|ico|avif)$/i,
             type: 'asset/resource',
             generator: {
-              filename: `${cfg.images}/${cfg.asset}[ext]`,
+              filename: `${cfg.images('dist')}/[name][ext]`,
             },
           },
           {
             test: /\.(ttf|otf|eot|woff2?)$/,
             type: 'asset/resource',
             generator: {
-              filename: `${cfg.fonts}/${cfg.asset}[ext]`,
+              filename: `${cfg.fonts('dist')}/[name][ext]`,
             },
           },
         ],
       },
-      plugins: [
-        new MiniCssExtractPlugin({
-          filename: `${cfg.styles}/${cfg.asset}.css`,
-        }),
-        new CssUrlRelativePlugin(),
-      ],
       resolve: {
         extensions: ['.scss', '.css'],
       },
-    });
+      plugins: [
+        new MiniCssExtractPlugin({
+          filename: ({ chunk }: PathData) =>
+            this.cssName(chunk?.id?.toString(), bundle, cfg, '[id]'),
+        }),
+        new CssUrlRelativePlugin(),
+      ],
+    };
   }
 
   private static getNoScriptConfig(bundle: BundleConfig): Configuration {
@@ -156,5 +151,16 @@ export class CompileConfig {
     return {
       plugins: [new WebpackRemoveEmptyScriptsPlugin()],
     };
+  }
+
+  static cssName(
+    chunkId: string | undefined,
+    { name, entry }: BundleConfig,
+    cfg: WordPackConfig,
+    fname: string = '[name]',
+  ): string {
+    const dir = Object.keys(entry).includes(chunkId || '') ? name : 'vendor';
+
+    return `${cfg.styles('dist')}/${dir}/${fname}.css`;
   }
 }

@@ -1,16 +1,10 @@
 import WebpackAssetsManifest, { Entry } from 'webpack-assets-manifest';
 import * as path from 'node:path';
 import * as fs from 'fs-extra';
+import { Asset } from 'webpack';
 
 export function manifestEntryFormatter({ key, value }: Entry): Entry | false {
-  const base = (p: string) => path.basename(path.dirname(p));
-
-  const src = base(key);
-  const dst = base(value);
-
-  if (src !== dst) {
-    key = `${dst}/${key}`;
-  }
+  key = `${path.dirname(value)}/${path.basename(key)}`;
 
   return { key, value };
 }
@@ -31,7 +25,7 @@ return array(
 {{{entries}}}
 );
 `;
-  const assets = Object.keys(mfs.assets);
+  const assets = Object.keys(mfs.assets).sort();
   const length = findLongest(assets);
   const entries = assets.map((k) => parseEntry(k, mfs.assets[k], length));
 

@@ -1,4 +1,5 @@
-import { Configuration, WebpackPluginInstance } from 'webpack';
+import * as path from 'node:path';
+import { Configuration, Module, WebpackPluginInstance } from 'webpack';
 import { BundleConfig, WordPackConfig } from '../config';
 import ImageMinimizerPlugin from 'image-minimizer-webpack-plugin';
 import {
@@ -25,6 +26,33 @@ export class OptimizeConfig {
     );
   }
 
+  static chunkName(module: Module): string {
+    const mpath = module.identifier().split('/node_modules/');
+    const split = (mpath.pop() as string).split('/');
+    const vendor = split.shift() as string;
+    const ident = split.shift() as string;
+    const parts: string[] = [vendor.replace('@', '')];
+
+    if (module.identifier().startsWith('css|')) {
+      return parts.join('');
+    }
+
+    // parts.push('../');
+    parts.push(path.sep);
+    parts.push(vendor.replace('@', ''));
+
+    if (vendor.startsWith('@')) {
+      parts.push('-');
+      parts.push(ident);
+    }
+
+    return parts.join('');
+  }
+
+  static chunkFilename(cfg: WordPackConfig): string {
+    return `${cfg.scripts('dist')}/[name].js`;
+  }
+
   private static getChunkConfig(
     cfg: WordPackConfig,
     bundle: BundleConfig,
@@ -36,31 +64,19 @@ export class OptimizeConfig {
     return {
       optimization: {
         splitChunks: {
-          chunks: 'initial',
           hidePathInfo: true,
           cacheGroups: {
-            awn: {
-              priority: -30,
+            vendor: {
+              priority: 10,
               reuseExistingChunk: true,
-              minChunks: 1,
-              chunks: 'initial',
-              name: 'awesome-notifications',
-              test: /[\\/]node_modules[\\/]awesome-notifications[\\/]/,
-              minSize: 0,
-            },
-            common: {
-              priority: -40,
-              reuseExistingChunk: true,
-              chunks: 'initial',
-              name: bundle.chunkName,
+              chunks: 'all',
+              filename: () => OptimizeConfig.chunkFilename(cfg),
+              name: (m: Module) => OptimizeConfig.chunkName(m),
               test: bundle.chunkTest,
-              minSize: 0,
+              minChunks: 1,
+              minSize: bundle.chunkMinSize,
             },
-            default: {
-              minChunks: 2,
-              priority: -50,
-              reuseExistingChunk: true,
-            },
+            default: false,
             defaultVendors: false,
           },
         },

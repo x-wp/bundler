@@ -1,0 +1,4 @@
+
+> @x-wp/wordpack@0.0.0-development test
+> webpack --config test/webpack.config.ts --env basePath=./test
+

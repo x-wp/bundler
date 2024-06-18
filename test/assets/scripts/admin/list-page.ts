@@ -45,5 +45,3 @@ document.addEventListener('DOMContentLoaded', () => {
   //   // });
   // console.log(uppy);
 });
-
-console.log('loaded');

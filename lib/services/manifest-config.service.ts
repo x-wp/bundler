@@ -11,7 +11,7 @@ export class ManifestConfig {
   private static mfs: Configuration;
   private static asts: Assets;
   static build(cfg: WordPackConfig): Configuration {
-    if (!cfg.prod || !cfg.manifest) {
+    if (!cfg.manifest) {
       return {};
     }
 
@@ -28,10 +28,11 @@ export class ManifestConfig {
     this.asts ??= Object.create(null);
 
     const defs: Options = {
-      output: 'manifest.json',
+      output: 'assets.json',
       space: 2,
       merge: true,
       assets: this.asts,
+      sortManifest: true,
       writeToDisk: false,
       customize: manifestEntryFormatter,
     };

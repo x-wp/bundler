@@ -1,0 +1,12 @@
+@import '@fortawesome/fontawesome-free/scss/fontawesome.scss';
+@import '@fortawesome/fontawesome-free/scss/regular';
+@import "@uppy/core/src/style.scss";
+
+
+body {
+  display:none;
+}
+
+div {
+  background: url('../../images/spinner.gif');
+}

@@ -20,23 +20,23 @@ export class AssetConfig {
   private static getCoreConfig(cfg: WordPackConfig): Configuration {
     return {
       name: 'AssetCopy',
-      context: cfg.resolve(cfg.srcDir),
+      context: cfg.path('src', 'root'),
       mode: cfg.mode,
       entry: {},
       output: {
-        path: cfg.resolve(cfg.distRoot),
+        path: cfg.path('dist', 'root'),
       },
       stats: false,
       plugins: [
         new CopyPlugin({
           patterns: [
             {
-              from: `${cfg.images}/**/*`,
-              to: `[path]${cfg.asset}[ext]`,
+              from: `${cfg.images('src')}/`,
+              to: `${cfg.images('dist')}/[path][name][ext]`,
               force: false,
-              noErrorOnMissing: true,
-              filter: (rp) =>
-                !fs.existsSync(rp.replace(cfg.srcDir, cfg.distRoot)),
+              noErrorOnMissing: false,
+              toType: 'template',
+              filter: (rp) => this.filterAssets(cfg, rp),
             },
           ],
         }),
@@ -48,6 +48,14 @@ export class AssetConfig {
       ],
       dependencies: cfg.bundles.map(({ name }) => name),
     };
+  }
+
+  static filterAssets(cfg: WordPackConfig, rp: string): boolean {
+    return !fs.existsSync(
+      rp
+        .replace(cfg.root('src'), cfg.root('dist'))
+        .replace(cfg.images('src'), cfg.images('dist')),
+    );
   }
 
   private static getOptimizeConfig(cfg: WordPackConfig): Configuration {
@@ -62,8 +70,9 @@ export class AssetConfig {
       },
     };
   }
+
   private static getManifestConfig(cfg: WordPackConfig): Configuration {
-    if (!cfg.prod || !cfg.manifest) {
+    if (!cfg.manifest) {
       return {};
     }
     return {
