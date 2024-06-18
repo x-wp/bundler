@@ -136,7 +136,7 @@ export class CompileConfig {
       plugins: [
         new MiniCssExtractPlugin({
           filename: ({ chunk }: PathData) =>
-            this.cssName(chunk?.id?.toString(), bundle, cfg, '[id]'),
+            this.cssName(chunk?.name, bundle, cfg),
         }),
         new CssUrlRelativePlugin(),
       ],
@@ -157,10 +157,9 @@ export class CompileConfig {
     chunkId: string | undefined,
     { name, entry }: BundleConfig,
     cfg: WordPackConfig,
-    fname: string = '[name]',
   ): string {
     const dir = Object.keys(entry).includes(chunkId || '') ? name : 'vendor';
 
-    return `${cfg.styles('dist')}/${dir}/${fname}.css`;
+    return `${cfg.styles('dist')}/${dir}/[name].css`;
   }
 }
