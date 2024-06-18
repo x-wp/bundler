@@ -123,6 +123,7 @@ export class OptimizeConfig {
         terserOptions: {
           format: {
             comments: false,
+            ascii_only: true,
           },
           compress: {
             drop_console: true,

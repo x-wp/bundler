@@ -110,6 +110,9 @@ export class CompileConfig {
                 options: {
                   implementation: 'sass',
                   sourceMap: true,
+                  sassOptions: {
+                    outputStyle: 'expanded',
+                  },
                 },
               },
             ],
