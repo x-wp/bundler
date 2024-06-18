@@ -160,6 +160,6 @@ export class CompileConfig {
   ): string {
     const dir = Object.keys(entry).includes(chunkId || '') ? name : 'vendor';
 
-    return `${cfg.styles('dist')}/${dir}/[name].css`;
+    return `${cfg.styles('dist')}/${dir}/${cfg.asset}.css`;
   }
 }
