@@ -8,3 +8,10 @@ body {
 div {
   background: url('../../images/spinner.gif');
 }
+
+.efis-fiscalize{
+  &::after {
+    font-family: "Font Awesome 6 Sharp";
+    content: "\f543";
+  }
+}

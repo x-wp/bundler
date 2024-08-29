@@ -10,8 +10,7 @@ export function manifestEntryFormatter({ key, value }: Entry): Entry | false {
 }
 
 export function manifestFileWriter(mfs: WebpackAssetsManifest): void {
-  const tmpl = `
-<?php
+  const tmpl = `<?php
 /**
  * Asset manifest file.
  *
