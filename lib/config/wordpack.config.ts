@@ -37,6 +37,14 @@ type DirType = keyof DirMap;
 export class WordPackConfig extends WordPackEnv {
   @IsString()
   @Transform(({ value }) => value.replace('[ext]', ''))
+  imagename: string = '[name]';
+
+  @IsString()
+  @Transform(({ value }) => value.replace('[ext]', ''))
+  fontname: string = '[name]';
+
+  @IsString()
+  @Transform(({ value }) => value.replace('[ext]', ''))
   filename: string = '[name].[contenthash:6]';
 
   @IsString()

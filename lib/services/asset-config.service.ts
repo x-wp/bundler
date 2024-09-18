@@ -32,7 +32,7 @@ export class AssetConfig {
           patterns: [
             {
               from: `${cfg.images('src')}/`,
-              to: `${cfg.images('dist')}/[path][name][ext]`,
+              to: `${cfg.images('dist')}/[path]${cfg.imagename}[ext]`,
               force: false,
               noErrorOnMissing: false,
               toType: 'template',

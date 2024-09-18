@@ -5,6 +5,8 @@ export interface WordPackConfigInterface {
   paths?: Partial<PathConfig>;
   manifest?: string;
   filename?: string;
+  imagename?: string;
+  fontname?: string;
   bundles: BundleConfigInterface[];
   multimode?: boolean;
   externals?: Record<string, string>;

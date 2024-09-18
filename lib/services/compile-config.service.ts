@@ -108,7 +108,7 @@ export class CompileConfig {
               {
                 loader: 'sass-loader',
                 options: {
-                  implementation: 'sass',
+                  api: 'modern-compiler',
                   sourceMap: true,
                   sassOptions: {
                     outputStyle: 'expanded',
@@ -121,14 +121,14 @@ export class CompileConfig {
             test: /\.(png|svg|jpg|jpeg|gif|ico|avif)$/i,
             type: 'asset/resource',
             generator: {
-              filename: `${cfg.images('dist')}/[name][ext]`,
+              filename: `${cfg.images('dist')}/${cfg.imagename}[ext]`,
             },
           },
           {
             test: /\.(ttf|otf|eot|woff2?)$/,
             type: 'asset/resource',
             generator: {
-              filename: `${cfg.fonts('dist')}/[name][ext]`,
+              filename: `${cfg.fonts('dist')}/${cfg.fontname}[ext]`,
             },
           },
         ],
