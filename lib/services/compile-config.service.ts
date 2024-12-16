@@ -1,9 +1,10 @@
-import { AssetInfo, Configuration, PathData } from 'webpack';
+import { Configuration, PathData } from 'webpack';
 import merge from 'webpack-merge';
 import { BundleConfig, WordPackConfig } from '../config';
 import WebpackRemoveEmptyScriptsPlugin from 'webpack-remove-empty-scripts';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import CssUrlRelativePlugin from 'css-url-relative-plugin';
+import { Options } from 'sass';
 
 export class CompileConfig {
   static build(
@@ -112,7 +113,8 @@ export class CompileConfig {
                   sourceMap: true,
                   sassOptions: {
                     outputStyle: 'expanded',
-                  },
+                    quietDeps: true,
+                  } as Options<'sync'>,
                 },
               },
             ],
