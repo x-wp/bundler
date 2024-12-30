@@ -3,6 +3,7 @@ import { Configuration, Module, WebpackPluginInstance } from 'webpack';
 import { BundleConfig, WordPackConfig } from '../config';
 import ImageMinimizerPlugin from 'image-minimizer-webpack-plugin';
 import {
+  SharpEncodeOptions,
   SharpOptions,
   SvgoOptions,
 } from 'image-minimizer-webpack-plugin/types/utils';
@@ -95,7 +96,10 @@ export class OptimizeConfig {
     return {
       optimization: {
         minimize: true,
-        minimizer: [...this.getCssMinimizers(), ...this.getImageMinimizers()],
+        minimizer: [
+          ...this.getCssMinimizers(),
+          ...this.getImageMinimizers(cfg.imageMin),
+        ],
       },
     };
   }
@@ -137,26 +141,36 @@ export class OptimizeConfig {
     return (this.cssMin ??= [new CssMinimizerPlugin()]);
   }
 
-  static getImageMinimizers(): WebpackPluginInstance[] {
+  static getImageMinimizers(
+    options: Partial<SharpEncodeOptions>,
+  ): WebpackPluginInstance[] {
     return (this.imageMin ??= [
       new ImageMinimizerPlugin<SharpOptions>({
         exclude: /\.svg$/,
         minimizer: {
           implementation: ImageMinimizerPlugin.sharpMinify,
           options: {
-            encodeOptions: {
-              jpeg: {
-                quality: 100,
+            encodeOptions: merge(
+              {
+                jpeg: {
+                  progressive: true,
+                  trellisQuantisation: true,
+                  optimiseScans: true,
+                },
+                webp: {
+                  lossless: true,
+                },
+                avif: {
+                  lossless: true,
+                },
+                png: {
+                  compressionLevel: 8,
+                  adaptiveFiltering: true,
+                },
+                gif: {},
               },
-              webp: {
-                lossless: true,
-              },
-              avif: {
-                lossless: true,
-              },
-              png: {},
-              gif: {},
-            },
+              options,
+            ),
           },
         },
       }),

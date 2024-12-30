@@ -18,6 +18,7 @@ import {
 import { WordPackEnv } from './wordpack-env';
 import { BundleConfig } from './bundle.config';
 import { DirMap, PathConfig } from './dir.config';
+import { SharpEncodeOptions } from 'image-minimizer-webpack-plugin/types/utils';
 
 type ExternalItem =
   | string
@@ -109,6 +110,9 @@ export class WordPackConfig extends WordPackEnv {
 
   @IsObject()
   override: Partial<Configuration> = {};
+
+  @IsObject()
+  imageMin: Partial<SharpEncodeOptions> = {};
 
   root(which: DirType): string {
     return this.dir(which, 'root');

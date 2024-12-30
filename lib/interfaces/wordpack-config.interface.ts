@@ -1,3 +1,4 @@
+import { SharpEncodeOptions } from 'image-minimizer-webpack-plugin/types/utils';
 import { PathConfig } from '../config/dir.config';
 import { BundleConfigInterface } from './bundle-config.interface';
 
@@ -10,6 +11,6 @@ export interface WordPackConfigInterface {
   bundles: BundleConfigInterface[];
   multimode?: boolean;
   externals?: Record<string, string>;
-
   sourceMaps?: string | false;
+  imageMin: Partial<SharpEncodeOptions>;
 }

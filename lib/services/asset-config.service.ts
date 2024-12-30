@@ -66,7 +66,7 @@ export class AssetConfig {
     return {
       optimization: {
         minimize: true,
-        minimizer: OptimizeConfig.getImageMinimizers(),
+        minimizer: OptimizeConfig.getImageMinimizers(cfg.imageMin),
       },
     };
   }
